@@ -1,10 +1,10 @@
 const {
   fetchArticleById,
   patchArticleVotes,
-  fetchAllArticles
+  getAllArticles
 } = require("../models/articleModels");
 
-const getArticlesById = (req, res, next) => {
+exports.getArticlesById = (req, res, next) => {
   fetchArticleById(req.params)
     .then(([article]) => {
       if (!article) return Promise.reject({ status: 404 });
@@ -13,14 +13,19 @@ const getArticlesById = (req, res, next) => {
     .catch(next);
 };
 
-const updateArticleVotes = (req, res, next) => {
+exports.updateArticleVotes = (req, res, next) => {
   patchArticleVotes(req.params, req.body).then(([article]) =>
         res.send({article})
   ).catch(next)
 };
 
-const getArticles = (req, res, next) => {
-  fetchAllArticles()
-}
+exports.getArticles = (req, res, next) => {
+  console.log("hereeeeeee")
+  getAllArticles(req.query)
+  .then(result => {
+  res.send(result)
+  }).catch(console.log)
+    }
+    
 
-module.exports = { getArticlesById, updateArticleVotes, getArticles};
+// module.exports = { getArticlesById, updateArticleVotes};

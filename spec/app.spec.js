@@ -33,7 +33,10 @@ describe("/", function() {
         });
     });
   });
+// check array length, i.e. number of topics
 
+//whats the point of checking its an empty object
+// second username test may be redundant
   describe("GET /api/users/:username", () => {
     it("Sends an empty object, with a key name", () => {
       return request(app)
@@ -73,7 +76,7 @@ describe("/", function() {
         });
     });
   });
-
+// maybe redundant first test
   describe("GET /api/articles/:article_id", () => {
     it("Sends an empty object, with a key name", () => {
       return request(app)
@@ -100,7 +103,7 @@ describe("/", function() {
           );
         });
     });
-
+//maybe include contents of article in another expect statement
     it("Error Handling. GET status:400 article by ID with a non-existent, non-integer ID", () => {
       return request(app)
         .get("/api/articles/jj")
