@@ -1,10 +1,14 @@
-const commentsRouter = require('express').Router();
-
+const commentsRouter = require("express").Router();
+const { methodNotAllowed } = require("../errors");
+const {
+  updateCommentVotes,
+  deleteComments
+} = require("../controllers/commentsControllers");
 
 commentsRouter
-  .route('/')
-  .get((req, res) => res.send({ ok: true }))
-
-
+  .route("/:comment_id")
+  .patch(updateCommentVotes)
+  .delete(deleteComments)
+  .all(methodNotAllowed);
 
 module.exports = commentsRouter;

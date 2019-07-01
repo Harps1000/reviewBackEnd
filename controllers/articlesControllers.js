@@ -7,7 +7,7 @@ const {
 exports.getArticlesById = (req, res, next) => {
   fetchArticleById(req.params)
     .then(([article]) => {
-      if (!article) return Promise.reject({ status: 404 });
+    if (!article) return Promise.reject({ message:"Not Found", status: 404 });
       res.status(200).send({ article });
     })
     .catch(next);
@@ -20,12 +20,16 @@ exports.updateArticleVotes = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  console.log("hereeeeeee")
   getAllArticles(req.query)
   .then(result => {
-  res.send(result)
-  }).catch(console.log)
+    if (result.length === 0) {
+      return Promise.reject({
+        message: "Not Found",
+        status: 404
+      });
+    } else {
+      res.send({ Articles: result});
     }
-    
-
-// module.exports = { getArticlesById, updateArticleVotes};
+  })
+  .catch(next);
+};
