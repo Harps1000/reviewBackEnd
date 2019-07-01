@@ -1,6 +1,17 @@
 const connection = require("../db/connection");
 
-exports.postCommentModel = ( body , { article_id }) => {
+
+
+exports.getingCommentsByArticleID = (query, { article_id }) => {
+  let sorting = query.sort_by || "created_at";
+  let ordering = query.order || "desc";
+  return connection("comments")
+    .select("comment_id", "votes", "created_at", "author", "body")
+    .where("article_id", "=", article_id)
+    .orderBy(sorting, ordering);
+}; 
+
+exports.postingComment = ( body , { article_id }) => {
   let comm = { ...body };
   let comment = {}
   
@@ -14,13 +25,11 @@ exports.postCommentModel = ( body , { article_id }) => {
     .returning("*");
 };
 
-exports.getCommentsByArticleIDModel = (query, { article_id }) => {
-  let sorting = query.sort_by || "created_at";
-  let ordering = query.order || "desc";
+exports.deleteComment = ({ comment_id }) => {
   return connection("comments")
-    .select("comment_id", "votes", "created_at", "author", "body")
-    .where("article_id", "=", article_id)
-    .orderBy(sorting, ordering);
+    .where("comment_id", "=", comment_id)
+    .del()
+    .returning("*");
 };
 
 exports.updateCommentVote = ({ inc_votes }, { comment_id }) => {
@@ -30,9 +39,3 @@ exports.updateCommentVote = ({ inc_votes }, { comment_id }) => {
     .returning("*");
 };
 
-exports.deleteComment = ({ comment_id }) => {
-  return connection("comments")
-    .where("comment_id", "=", comment_id)
-    .del()
-    .returning("*");
-};

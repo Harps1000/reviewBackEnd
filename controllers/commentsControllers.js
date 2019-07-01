@@ -1,22 +1,14 @@
 const {
-    postCommentModel,
-    getCommentsByArticleIDModel,
+    postingComment,
+    getingCommentsByArticleID,
     updateCommentVote,
     deleteComment
   } = require("../models/commentsModels");
   
-  exports.postCommentController = (req, res, next) => {
   
-  
-    postCommentModel(req.body, req.params)
-      .then(result => {
-        res.status(201).send({ comment: result[0] });
-      })
-      .catch(next);
-  };
   
   exports.getCommentsByArticleID = (req, res, next) => {
-    getCommentsByArticleIDModel(req.query, req.params)
+    getingCommentsByArticleID(req.query, req.params)
       .then(result => {
         if (result.length === 0) {
           return Promise.reject({ message: "Not Found", status: 404 });
@@ -49,6 +41,14 @@ const {
         } else {
           res.sendStatus(204);
         }
+      })
+      .catch(next);
+  };
+
+  exports.postComments = (req, res, next) => {
+    postingComment(req.body, req.params)
+      .then(result => {
+        res.status(201).send({ comment: result[0] });
       })
       .catch(next);
   };

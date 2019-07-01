@@ -4,6 +4,21 @@ const {
   getAllArticles
 } = require("../models/articleModels");
 
+exports.getArticles = (req, res, next) => {
+  getAllArticles(req.query)
+  .then(result => {
+    if (result.length === 0) {
+      return Promise.reject({
+        message: "Not Found",
+        status: 404
+      });
+    } else {
+      res.send({ Articles: result});
+    }
+  })
+  .catch(next);
+};
+
 exports.getArticlesById = (req, res, next) => {
   fetchArticleById(req.params)
     .then(([article]) => {
@@ -19,17 +34,3 @@ exports.updateArticleVotes = (req, res, next) => {
   ).catch(next)
 };
 
-exports.getArticles = (req, res, next) => {
-  getAllArticles(req.query)
-  .then(result => {
-    if (result.length === 0) {
-      return Promise.reject({
-        message: "Not Found",
-        status: 404
-      });
-    } else {
-      res.send({ Articles: result});
-    }
-  })
-  .catch(next);
-};

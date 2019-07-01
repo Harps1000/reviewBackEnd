@@ -116,7 +116,13 @@ describe("/", function() {
           });
         });
       })
-      it("bad request expecting 400 and err message", () => {
+      it("Error Handling: Some other property on request body should be ignored", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 3, name: "catula" })
+          .expect(200)
+          });
+      it("Error Handling: bad request expecting 400 and err message", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: "catula" })
@@ -125,20 +131,15 @@ describe("/", function() {
             expect(body.message).to.eql("Bad Request");
           });
       });
-      it("Some other property on request body should be ignored", () => {
-        return request(app)
-          .patch("/api/articles/1")
-          .send({ inc_votes: 3, name: "catula" })
-          .expect(200)
-          });
+    
       });
     
    
     describe("POST /api/articles/:article_id/comments", () => {
-      it("status:201, successfully added the supplied comment to database and returns it", () => {
+      it("Status:201: Successfully added comment & returns it", () => {
         return request(app)
           .post("/api/articles/6/comments")
-          .send({ username: "butter_bridge", body: "adding a comment" })
+          .send({ username: "butter_bridge", body: "expecting to see this back" })
           .expect(201)
           .then(({ body }) => {
             expect(body.comment).to.have.all.keys(
@@ -151,7 +152,17 @@ describe("/", function() {
             );
           });
       });
-      it("status:400 when article_id invalid", () => {
+    
+      it("Error Handling: status:404 when article_id does not exist but is int", () => {
+        return request(app)
+          .post("/api/articles/24555/comments")
+          .send({ username: "butter_bridge", body: "fail" })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({ message: "Not Found" });
+          });
+      });
+      it("Error Handling: Status:400 when article_id is invalid type", () => {
         return request(app)
           .post("/api/articles/string/comments")
           .send({ username: "butter_bridge", body: "fail" })
@@ -160,19 +171,10 @@ describe("/", function() {
             expect(body.message).to.equal("Bad Request");
           });
       });
-      it("status:404 when article_id nonexistent", () => {
-        return request(app)
-          .post("/api/articles/657/comments")
-          .send({ username: "butter_bridge", body: "fail" })
-          .expect(404)
-          .then(({ body }) => {
-            expect(body).to.eql({ message: "Not Found" });
-          });
-      });
     });
   
     describe("GET /api/articles/:article_id/comments", () => {
-      it("status:200, successfully responds with all the correct comments for specified article, with default order of descending", () => {
+      it("status:200, successfully responds with Comments by article ID, with default order of descending", () => {
         return request(app)
           .get("/api/articles/1/comments")
           .then(({ body }) => {
@@ -187,7 +189,7 @@ describe("/", function() {
             expect(body.comments).to.be.descendingBy("created_at");
           });
       });
-      it("succesfully implements the sort_by and order queries", () => {
+      it("Succesfully implements sort_by and order according to query", () => {
         return request(app)
           .get("/api/articles/1/comments?sort_by=comment_id&order=asc")
           .expect(200)
@@ -203,25 +205,26 @@ describe("/", function() {
             expect(body.comments).to.be.ascendingBy("comment_id");
           });
       });
-      it("status:404, custom error when article_id nonexistent", () => {
+    
+      it("Error Handling: status:400 when article_id is invalid", () => {
         return request(app)
-          .get("/api/articles/666/comments")
-          .expect(404)
-          .then(({ body }) => {
-            expect(body).to.eql({ message: "Not Found" });
-          });
-      });
-      it("status:400 when article_id invalid", () => {
-        return request(app)
-          .get("/api/articles/NotAnInt/comments")
+          .get("/api/articles/randomstrings/comments")
           .expect(400)
           .then(({ body }) => {
             expect(body.message).to.equal("Bad Request");
           });
       });
-      it("status:400 when when sort_by set to non-existent column", () => {
+      it("Error Handling: status:404, error message when article_id does not exist", () => {
         return request(app)
-          .get("/api/articles/5/comments?sort_by=notAColumn&order=asc")
+          .get("/api/articles/999/comments")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({ message: "Not Found" });
+          });
+      });
+      it("Error Handling: status:400 when when sort_by set to column that does not exist", () => {
+        return request(app)
+          .get("/api/articles/5/comments?sort_by=random&order=asc")
           .expect(400)
           .then(({ body }) => {
             expect(body.message).to.equal("Bad Request");
@@ -230,7 +233,7 @@ describe("/", function() {
     });
   
     describe("GET /api/articles", () => {
-      it("status:200, successfully responds with all articles", () => {
+      it("Status:200: Successfully responds with all articles", () => {
         return request(app)
           .get("/api/articles")
           .expect(200)
@@ -258,7 +261,7 @@ describe("/", function() {
             });
           });
       });
-      it("successfully sorts and orders by if given the corresponding queries", () => {
+      it("Successfully sorts and orders by queries", () => {
         return request(app)
           .get("/api/articles?sort_by=title&order=asc")
           .expect(200)
@@ -277,7 +280,7 @@ describe("/", function() {
             expect(body.Articles).to.be.ascendingBy("title");
           });
       });
-      it("successfully filters the results if given the corresponding queries", () => {
+      it("Successfully filters the results by queries", () => {
         return request(app)
           .get("/api/articles?sort_by=title&order=asc&author=rogersop&topic=cats")
           .expect(200)
@@ -298,25 +301,25 @@ describe("/", function() {
             expect(body.Articles[0].author).to.equal("rogersop");
           });
       });
-      it("status:400 when when sort_by set to non-existent column", () => {
+      it("Error Handling: status:400 when when sort_by set to column does not exist", () => {
         return request(app)
-          .get("/api/articles?sort_by=notAColumn&order=asc")
+          .get("/api/articles?sort_by=random&order=asc")
           .expect(400)
           .then(({ body }) => {
             expect(body.message).to.equal("Bad Request");
           });
       });
-      it("status:404 when when author set to non-existent author", () => {
+      it("Error Handling: status:404 when when author does not exist", () => {
         return request(app)
-          .get("/api/articles?author=iDontWrite&order=asc")
+          .get("/api/articles?author=randomista&order=asc")
           .expect(404)
           .then(({ body }) => {
             expect(body.message).to.equal("Not Found");
           });
       });
-      it("status:404 when when topic set to non-existent topic", () => {
+      it("Error Handling: status:404 when when topic does not exist", () => {
         return request(app)
-          .get("/api/articles?topic=iAmNotWrittenAbout&order=asc")
+          .get("/api/articles?topic=random&order=asc")
           .expect(404)
           .then(({ body }) => {
             expect(body.message).to.equal("Not Found");
@@ -325,43 +328,43 @@ describe("/", function() {
     });
   
     describe("PATCH /api/comments/:comment_id", () => {
-      it("status:200, succesfully updates specified comment votes and responds with updated comment", () => {
+      it("status:200: updates comment votes and responds with updated comment", () => {
         return request(app)
           .patch("/api/comments/1")
-          .send({ inc_votes: 10 })
+          .send({ inc_votes: 5 })
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment.votes).to.equal(26);
+            expect(body.comment.votes).to.equal(21);
           });
       });
-      it("status:404, custom error when article_id nonexistent", () => {
+      it("Error Handing: status:404, error msg when article_id non-existent", () => {
         return request(app)
-          .patch("/api/comments/711")
-          .send({ inc_votes: 10 })
+          .patch("/api/comments/1221")
+          .send({ inc_votes: 4 })
           .expect(404)
           .then(({ body }) => {
             expect(body).to.eql({ message: "Not Found" });
           });
       });
-      it("status:400 when article_id invalid", () => {
+      it("Error Handling: status:400 when article_id invalid", () => {
         return request(app)
-          .patch("/api/comments/notAnInt")
-          .send({ inc_votes: 10 })
+          .patch("/api/comments/string")
+          .send({ inc_votes: 5 })
           .expect(400)
           .then(({ body }) => {
             expect(body.message).to.equal("Bad Request");
           });
       });
-      it("status:400, responds with custom error when request body has invalid key or value", () => {
+      it("Error Handling: status:400, responds with error msg when request body has incorrect key", () => {
         return request(app)
           .patch("/api/comments/10")
-          .send({ invalid_key: "notAnInt" })
+          .send({ random: 6 })
           .expect(400)
           .then(({ body }) => {
             expect(body.message).to.equal("Incorrect Key");
           });
       });
-      it("status:400, responds with custom error when request body non-existent", () => {
+      it("Error Handling: status:400, responds with error msg when request body undefined", () => {
         return request(app)
           .patch("/api/comments/2")
           .expect(400)
@@ -369,7 +372,7 @@ describe("/", function() {
             expect(body.message).to.equal("Incorrect Key");
           });
       });
-      it("status:400 when value of inc_votes is not an integer", () => {
+      it("Error Handling: status:400 inc_votes is non-integer", () => {
         return request(app)
           .patch("/api/comments/3")
           .send({ inc_votes: "string" })

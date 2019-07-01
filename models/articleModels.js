@@ -21,10 +21,8 @@ return connection('articles')
 
 exports.getAllArticles = (query)=>{
 
-
   let ordering = query.order || "desc";
   let sorting = query.sort_by || "created_at";
-
   return connection('articles')
   .select('articles.*')
   .modify(stat => {
